@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: 34 33% 98%;
+  --foreground: 212 33% 16%;
+  --card: 0 0% 100%;
+  --card-foreground: 212 33% 16%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 212 33% 16%;
+  --primary: 24 92% 48%;
+  --primary-foreground: 38 100% 97%;
+  --secondary: 197 35% 92%;
+  --secondary-foreground: 210 25% 23%;
+  --muted: 205 32% 94%;
+  --muted-foreground: 210 16% 38%;
+  --accent: 196 57% 90%;
+  --accent-foreground: 211 34% 21%;
+  --destructive: 2 78% 52%;
+  --border: 205 24% 84%;
+  --input: 205 24% 84%;
+  --ring: 24 92% 48%;
+  --radius: 1rem;
+}
+
+.dark {
+  --background: 205 45% 8%;
+  --foreground: 34 28% 92%;
+  --card: 207 37% 10%;
+  --card-foreground: 34 28% 92%;
+  --popover: 207 37% 10%;
+  --popover-foreground: 34 28% 92%;
+  --primary: 28 90% 62%;
+  --primary-foreground: 210 40% 12%;
+  --secondary: 189 27% 22%;
+  --secondary-foreground: 34 28% 92%;
+  --muted: 205 28% 16%;
+  --muted-foreground: 204 14% 72%;
+  --accent: 188 34% 23%;
+  --accent-foreground: 34 28% 92%;
+  --destructive: 2 83% 62%;
+  --border: 205 26% 22%;
+  --input: 205 26% 22%;
+  --ring: 28 90% 62%;
+  --radius: 1rem;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Georgia", serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Manrope Variable", "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  }
+
+  html {
+    @apply bg-background;
+  }
+
+  button,
+  input {
+    @apply outline-none;
+  }
+}

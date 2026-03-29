@@ -1,0 +1,55 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vite-plus/test";
+import { I18nProvider, LOCALE_STORAGE_KEY, useI18n } from "./i18n.js";
+
+function I18nHarness() {
+  const { locale, messages, setLocale } = useI18n();
+
+  return (
+    <div>
+      <p>locale:{locale}</p>
+      <p>label:{messages.searchLabel}</p>
+      <button type="button" onClick={() => setLocale("en")}>
+        English
+      </button>
+      <button type="button" onClick={() => setLocale("pt-BR")}>
+        Portuguese
+      </button>
+    </div>
+  );
+}
+
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+  vi.unstubAllGlobals();
+});
+
+test("uses portuguese when the browser prefers portuguese", () => {
+  vi.stubGlobal("navigator", { language: "pt-BR" });
+
+  render(
+    <I18nProvider>
+      <I18nHarness />
+    </I18nProvider>,
+  );
+
+  expect(screen.getByText("locale:pt-BR")).toBeTruthy();
+  expect(screen.getByText("label:Escolha uma cidade")).toBeTruthy();
+});
+
+test("persists explicit locale selection and updates document lang", () => {
+  vi.stubGlobal("navigator", { language: "en-US" });
+
+  render(
+    <I18nProvider>
+      <I18nHarness />
+    </I18nProvider>,
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "Portuguese" }));
+
+  expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("pt-BR");
+  expect(document.documentElement.lang).toBe("pt-BR");
+  expect(screen.getByText("locale:pt-BR")).toBeTruthy();
+});

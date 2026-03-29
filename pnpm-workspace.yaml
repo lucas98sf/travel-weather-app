@@ -1,0 +1,41 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+
+catalog:
+  "@apollo/client": ^4.1.6
+  "@pothos/core": ^4.12.0
+  "@rolldown/plugin-babel": ^0.2.2
+  "@tanstack/react-query": ^5.95.2
+  "@testing-library/react": ^16.3.2
+  "@testing-library/user-event": ^14.6.1
+  "@types/node": ^24
+  "@types/react": ^19.2.14
+  "@types/react-dom": ^19.2.3
+  "@types/react-relay": ^18.2.1
+  "@types/relay-runtime": ^20.1.1
+  "@vitejs/plugin-react": ^6.0.1
+  babel-plugin-react-compiler: ^1.0.0
+  graphql: ^16.13.2
+  graphql-yoga: ^5.18.1
+  jsdom: ^29.0.1
+  react: ^19.2.4
+  react-dom: ^19.2.4
+  relay-compiler: ^20.1.1
+  typescript: ^5
+  vite: npm:@voidzero-dev/vite-plus-core@latest
+  vite-plus: latest
+  vitest: npm:@voidzero-dev/vite-plus-test@latest
+
+catalogMode: prefer
+overrides:
+  vite: "catalog:"
+  vitest: "catalog:"
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest
+  allowedVersions:
+    vite: "*"
+    vitest: "*"

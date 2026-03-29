@@ -1,0 +1,23 @@
+{
+  "name": "travel-weather-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ready": "vp fmt && vp lint && vp run test -r && vp run build -r",
+    "dev": "concurrently -n api,relay,vite -c blue,magenta,green \"vp run api#dev\" \"vp run website#relay:watch\" \"vp run website#dev:vite\"",
+    "dev:api": "vp run api#dev",
+    "prepare": "vp config"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "eslint-plugin-react-compiler": "19.1.0-rc.2",
+    "eslint-plugin-relay": "^2.0.0",
+    "relay-compiler": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

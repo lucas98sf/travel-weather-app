@@ -1,0 +1,60 @@
+enum Activity {
+  INDOOR_SIGHTSEEING
+  OUTDOOR_SIGHTSEEING
+  SKIING
+  SURFING
+}
+
+type ActivityFactor {
+  impact: FactorImpact!
+  key: String!
+  label: String!
+  unit: String
+  value: Float!
+}
+
+type ActivityRecommendation {
+  activity: Activity!
+  bestDay: String!
+  factors: [ActivityFactor!]!
+  note: String
+  rank: Int!
+  score: Int!
+  summary: String!
+}
+
+type DailyActivitySummary {
+  activity: Activity!
+  date: String!
+  factors: [ActivityFactor!]!
+  label: String!
+  score: Int!
+}
+
+enum FactorImpact {
+  NEGATIVE
+  NEUTRAL
+  POSITIVE
+}
+
+type LocationOption {
+  country: String!
+  id: String!
+  latitude: Float!
+  longitude: Float!
+  name: String!
+  region: String
+  timezone: String!
+}
+
+type Query {
+  searchDestinations(locale: String!, query: String!): [LocationOption!]!
+  travelActivityRanking(locale: String!, locationId: String!): TravelActivityReport!
+}
+
+type TravelActivityReport {
+  activities: [ActivityRecommendation!]!
+  dailySummaries: [DailyActivitySummary!]!
+  generatedAt: String!
+  location: LocationOption!
+}
