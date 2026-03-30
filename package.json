@@ -9,6 +9,11 @@
     "dev:api": "vp run api#dev",
     "prepare": "vp config"
   },
+  "dependencies": {
+    "@pothos/core": "catalog:",
+    "graphql": "catalog:",
+    "graphql-yoga": "catalog:"
+  },
   "devDependencies": {
     "concurrently": "^9.2.0",
     "eslint-plugin-react-compiler": "19.1.0-rc.2",
