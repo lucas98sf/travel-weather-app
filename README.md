@@ -42,12 +42,6 @@ AI (mainly Codex) was used as a pair-programming assistant during the build. It 
 ## Development
 
 - Prerequisites:
-
-```bash
-# Node.js 22.12+ is required
-npm install -g pnpm
-```
-
 - Install `vp`:
   - macOS / Linux: `curl -fsSL https://vite.plus | bash`
   - Windows PowerShell: `irm https://vite.plus/ps1 | iex`
@@ -99,7 +93,7 @@ vp run api#dev
 vp run website#relay:watch
 ```
 
-- Build the monorepo:
+- Build:
 
 ```bash
 vp run build -r
