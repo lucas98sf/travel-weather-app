@@ -3,6 +3,10 @@ command = "vp run api#generate:schema && vp run website#build"
 publish = "apps/website/dist"
 functions = "netlify/functions"
 
+[functions]
+node_bundler = "esbuild"
+external_node_modules = ["@pothos/core", "graphql", "graphql-yoga"]
+
 [[redirects]]
 from = "/api/graphql"
 to = "/.netlify/functions/graphql"
