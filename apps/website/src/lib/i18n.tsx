@@ -25,6 +25,7 @@ const messages = {
       SURFING: "Surfing",
     },
     bestDay: "Best day",
+    noBestDayAvailable: "No viable day in this forecast.",
     heroBadge: "Travel Weather Planner",
     heroCopy: "Compare surfing, sightseeing, skiing, and indoor options over the next seven days.",
     heroTitle: "Weather-ranked escapes.",
@@ -72,7 +73,8 @@ const messages = {
       SURFING: "Surfe",
     },
     bestDay: "Melhor dia",
-    heroBadge: "Planejador de clima para viagem",
+    noBestDayAvailable: "Nenhum dia viavel nesta previsao.",
+    heroBadge: "Planejador de viagens com base no clima",
     heroCopy:
       "Compare surfe, passeios, esqui e opções em ambientes fechados para os próximos sete dias.",
     heroTitle: "Passeios guiados pelo clima.",
@@ -83,7 +85,7 @@ const messages = {
     rankingEmpty: "Escolha um destino acima para carregar o ranking.",
     rankingLoading: (locationLabel: string) => `Carregando ${locationLabel}...`,
     rankingSubtitle: "Compare os proximos sete dias de cada atividade.",
-    rankingTitle: "Atratividade em sete dias",
+    rankingTitle: "Atratividade nos próximos sete dias",
     scoreDriversBadge: "Critérios",
     scoreDriversCopy:
       "Cada atividade recebe pesos diferentes dos sinais de clima para mostrar rapidamente por que uma cidade favorece neve, swell, sol ou um plano indoor.",
@@ -134,8 +136,19 @@ function readStoredLocale(): AppLocale {
   return isSupportedLocale(storedLocale) ? storedLocale : detectBrowserLocale();
 }
 
+function parseDateValue(value: string) {
+  const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch;
+    return new Date(Number(year), Number(month) - 1, Number(day), 12);
+  }
+
+  return new Date(value);
+}
+
 function formatSafeDate(locale: AppLocale, value: string, options: Intl.DateTimeFormatOptions) {
-  const date = new Date(value);
+  const date = parseDateValue(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;

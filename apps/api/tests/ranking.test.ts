@@ -1,5 +1,5 @@
 import { expect, test } from "vite-plus/test";
-import { Activity, rankActivities, type DailyWeather } from "../src/ranking.js";
+import { Activity, rankActivities, type DailyWeather } from "../src/domain/travel/ranking.js";
 
 function buildDay(overrides: Partial<DailyWeather>): DailyWeather {
   return {
@@ -50,6 +50,24 @@ test("skiing improves with cold snowy days", () => {
   const skiingWarm = rankActivities(warmWeek).find((item) => item.activity === Activity.SKIING)!;
 
   expect(skiingCold.score).toBeGreaterThan(skiingWarm.score);
+});
+
+test("skiing scores zero on warm snowless days", () => {
+  const warmSnowlessWeek = rankActivities(
+    Array.from({ length: 7 }, (_, index) =>
+      buildDay({
+        date: `2026-03-${String(28 + index).padStart(2, "0")}`,
+        temperatureMax: 17,
+        temperatureMin: 7,
+        apparentTemperatureMax: 18,
+        snowfallSum: 0,
+        precipitationSum: 0,
+      }),
+    ),
+  ).find((item) => item.activity === Activity.SKIING)!;
+
+  expect(warmSnowlessWeek.score).toBe(0);
+  expect(warmSnowlessWeek.dailyScores.every((day) => day.score === 0)).toBe(true);
 });
 
 test("outdoor sightseeing prefers mild, dry, sunny weather", () => {

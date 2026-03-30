@@ -1,5 +1,5 @@
 export { Activity } from "./types.ts";
-import { normalizeLocale } from "./locale.ts";
+import { normalizeLocale } from "../../lib/locale.ts";
 import { Activity } from "./types.ts";
 import type { ActivityFactor, ActivityRecommendation, DailyWeather } from "./types.ts";
 
@@ -22,6 +22,10 @@ function average(values: number[]): number {
 
 function toScore(value: number): number {
   return Math.round(clamp(value, 0, 100));
+}
+
+function capitalize(value: string): string {
+  return value.length > 0 ? `${value[0]!.toUpperCase()}${value.slice(1)}` : value;
 }
 
 function getRankingCopy(localeInput: string | undefined) {
@@ -52,8 +56,8 @@ function getRankingCopy(localeInput: string | undefined) {
         mixed: "misto",
         strong: "forte",
       },
-      summaryTemplate: (activityLabel: string, scoreLabel: string) =>
-        `${activityLabel} parece ${scoreLabel} nos próximos sete dias.`,
+      summaryTemplate: (activityLabel: string, scoreLabel: string, simple = false) =>
+        simple ? capitalize(scoreLabel) : `${activityLabel} está ${scoreLabel} essa semana.`,
     };
   }
 
@@ -81,8 +85,8 @@ function getRankingCopy(localeInput: string | undefined) {
       mixed: "mixed",
       strong: "strong",
     },
-    summaryTemplate: (activityLabel: string, scoreLabel: string) =>
-      `${activityLabel} looks ${scoreLabel} over the next week.`,
+    summaryTemplate: (activityLabel: string, scoreLabel: string, simple = false) =>
+      simple ? capitalize(scoreLabel) : `${activityLabel} looks ${scoreLabel} over the next week.`,
   };
 }
 
@@ -172,12 +176,15 @@ function buildRecommendation(
 
 function skiingScore(day: DailyWeather, localeInput: string | undefined) {
   const copy = getRankingCopy(localeInput);
+  const hasNoSnowAndStaysAboveFreezing = day.snowfallSum === 0 && day.temperatureMin > 0;
   const coldBoost = clamp((2 - day.temperatureMax) * 7, 0, 28);
   const freezeBoost = clamp((0 - day.temperatureMin) * 3.4, 0, 24);
   const snowfallBoost = clamp(day.snowfallSum * 5.2, 0, 34);
   const rainPenalty = clamp(day.precipitationSum * 2.6, 0, 18);
   const thawPenalty = clamp((day.apparentTemperatureMax - 3) * 5, 0, 16);
-  const score = toScore(24 + coldBoost + freezeBoost + snowfallBoost - rainPenalty - thawPenalty);
+  const score = hasNoSnowAndStaysAboveFreezing
+    ? 0
+    : toScore(24 + coldBoost + freezeBoost + snowfallBoost - rainPenalty - thawPenalty);
 
   return {
     score,

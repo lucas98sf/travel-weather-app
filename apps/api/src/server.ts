@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { createYogaServer } from "./yoga.ts";
+import { createYogaServer } from "./server/create-yoga-server.ts";
 
 const port = Number(process.env.PORT ?? "4000");
 

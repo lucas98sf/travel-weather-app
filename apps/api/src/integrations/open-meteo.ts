@@ -1,4 +1,4 @@
-import { getOpenMeteoLanguage } from "./locale.ts";
+import { getOpenMeteoLanguage } from "../lib/locale.ts";
 
 const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const REVERSE_GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/reverse";
@@ -77,6 +77,31 @@ export interface MarineForecastResult {
   coastalLocation: LocationOption | null;
 }
 
+function normalizeLocationSegment(value: string | null | undefined): string {
+  return value?.trim().toLocaleLowerCase("en-US") ?? "";
+}
+
+function dedupeLocations(locations: Omit<LocationOption, "id">[]): Omit<LocationOption, "id">[] {
+  const seen = new Set<string>();
+
+  return locations.filter((location) => {
+    const key = [
+      normalizeLocationSegment(location.name),
+      normalizeLocationSegment(location.region),
+      normalizeLocationSegment(location.country),
+      location.latitude.toFixed(4),
+      location.longitude.toFixed(4),
+    ].join("|");
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 async function fetchJson<T>(url: URL): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -109,21 +134,19 @@ export async function searchDestinations(
 
   const response = await fetchJson<GeocodingApiResponse>(url);
 
-  return (response.results ?? []).map((result) => {
-    const location = {
-      name: result.name,
-      region: result.admin1 ?? null,
-      country: result.country,
-      latitude: result.latitude,
-      longitude: result.longitude,
-      timezone: result.timezone,
-    };
+  const locations = (response.results ?? []).map((result) => ({
+    name: result.name,
+    region: result.admin1 ?? null,
+    country: result.country,
+    latitude: result.latitude,
+    longitude: result.longitude,
+    timezone: result.timezone,
+  }));
 
-    return {
-      id: encodeLocationId(location),
-      ...location,
-    };
-  });
+  return dedupeLocations(locations).map((location) => ({
+    id: encodeLocationId(location),
+    ...location,
+  }));
 }
 
 async function reverseGeocodeLocation(

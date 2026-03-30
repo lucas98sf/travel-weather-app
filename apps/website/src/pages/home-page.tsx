@@ -13,8 +13,8 @@ import { ThemeToggle } from "../components/theme-toggle.js";
 import { Badge } from "../components/ui/badge.js";
 import { DEFAULT_DESTINATION_QUERY } from "../lib/constants.js";
 import { useI18n } from "../lib/i18n.js";
+import { dedupeLocationsByLabel, formatLocationLabel } from "../lib/location.js";
 import { relayEnvironment } from "../lib/relay.js";
-import type { TemperatureUnit } from "../lib/temperature.js";
 import { useTheme } from "../lib/theme.js";
 import type { destinationCombobox_destination$key } from "../__generated__/destinationCombobox_destination.graphql";
 import type { homePageSearchDestinationsQuery } from "../__generated__/homePageSearchDestinationsQuery.graphql";
@@ -32,10 +32,6 @@ const searchDestinationsQueryNode = graphql`
   }
 `;
 
-function formatDestinationLabel(location: Pick<DestinationOption, "country" | "name" | "region">) {
-  return [location.name, location.region, location.country].filter(Boolean).join(", ");
-}
-
 export function HomePage() {
   const { locale, messages, setLocale } = useI18n();
   const { setThemeMode, themeMode } = useTheme();
@@ -49,7 +45,6 @@ export function HomePage() {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const [selectedLocationLabel, setSelectedLocationLabel] = useState<string | null>(null);
-  const [temperatureUnit, setTemperatureUnit] = useState<TemperatureUnit>("celsius");
   const requestSequence = useRef(0);
   const suppressNextQueryEffect = useRef(false);
   const closeDropdownTimeout = useRef<number | null>(null);
@@ -91,7 +86,7 @@ export function HomePage() {
         return;
       }
 
-      const nextResults = response?.searchDestinations ?? [];
+      const nextResults = dedupeLocationsByLabel(response?.searchDestinations ?? []);
       setResults(nextResults);
       setHighlightedIndex(nextResults.length > 0 ? 0 : -1);
       setIsDropdownOpen(options.openDropdown ?? true);
@@ -183,7 +178,7 @@ export function HomePage() {
 
   function handleSelect(location: DestinationOption, options: { suppressSearch?: boolean } = {}) {
     const locationId = location.id;
-    const locationLabel = formatDestinationLabel(location);
+    const locationLabel = formatLocationLabel(location);
 
     if (options.suppressSearch) {
       suppressNextQueryEffect.current = true;
@@ -271,12 +266,7 @@ export function HomePage() {
         </section>
 
         <div className="lg:h-full lg:min-h-0">
-          <RankingPanel
-            queryRef={queryRef}
-            selectedLocationLabel={selectedLocationLabel}
-            temperatureUnit={temperatureUnit}
-            onTemperatureUnitChange={setTemperatureUnit}
-          />
+          <RankingPanel queryRef={queryRef} selectedLocationLabel={selectedLocationLabel} />
         </div>
       </div>
     </main>

@@ -1,5 +1,9 @@
 import { expect, test } from "vite-plus/test";
-import { decodeLocationId, encodeLocationId, summariseMarineForecast } from "../src/openMeteo.js";
+import {
+  decodeLocationId,
+  encodeLocationId,
+  summariseMarineForecast,
+} from "../src/integrations/open-meteo.js";
 test("location ids round-trip the selected place payload", () => {
   const id = encodeLocationId({
     name: "Montauk",

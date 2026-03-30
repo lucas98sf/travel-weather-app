@@ -1,7 +1,7 @@
 import { graphql, useFragment } from "react-relay";
 import { Landmark, Mountain, TentTree, Waves } from "lucide-react";
 import { useI18n } from "../lib/i18n.js";
-import { formatFactorForUnit, type TemperatureUnit } from "../lib/temperature.js";
+import { formatFactorForLocale } from "../lib/temperature.js";
 import { cn } from "../lib/utils.js";
 import { Badge } from "./ui/badge.js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card.js";
@@ -120,42 +120,17 @@ function getScoreTone(score: number) {
 
 interface ActivityCardProps {
   recommendationRef: activityCard_recommendation$key;
-  temperatureUnit: TemperatureUnit;
   dailySummaries: ReadonlyArray<reportView_report$data["dailySummaries"][number]>;
 }
 
-export function shouldHideRecommendationCard(
-  activity: RecommendationActivity,
-  factors: ReadonlyArray<
-    Pick<activityCard_recommendation$data["factors"][number], "key" | "value">
-  >,
-) {
-  if (activity !== "SKIING") {
-    return false;
-  }
-
-  const snowfall = factors.find((factor) => factor.key === "snowfall")?.value ?? 0;
-  const lowTemperature =
-    factors.find((factor) => factor.key === "tempMin")?.value ?? Number.POSITIVE_INFINITY;
-
-  return snowfall < 1 && lowTemperature > 2;
-}
-
-export function ActivityCard({
-  recommendationRef,
-  temperatureUnit,
-  dailySummaries,
-}: ActivityCardProps) {
-  const { formatDay, messages } = useI18n();
+export function ActivityCard({ recommendationRef, dailySummaries }: ActivityCardProps) {
+  const { formatDay, locale, messages } = useI18n();
   const recommendation = useFragment(recommendationFragmentNode, recommendationRef);
   const Icon = getActivityIcon(recommendation.activity);
   const recommendationNote = getRecommendationNote(recommendation.note);
   const compactFactors = getCompactFactors(recommendation.factors);
   const scoreTone = getScoreTone(recommendation.score);
-
-  if (shouldHideRecommendationCard(recommendation.activity, recommendation.factors)) {
-    return null;
-  }
+  const showBestDay = recommendation.score > 0;
 
   return (
     <Card className="h-full rounded-[1.35rem] border-border/60 bg-background/55">
@@ -190,27 +165,32 @@ export function ActivityCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2.5 p-3.5 pt-0">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl bg-muted/35 px-3 py-2">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {messages.bestDay}
-          </p>
-          <p className="text-sm font-medium text-foreground">{formatDay(recommendation.bestDay)}</p>
-          {recommendationNote ? (
-            <p className="hidden min-w-0 flex-1 text-xs leading-5 text-amber-900 dark:text-amber-100 2xl:block 2xl:truncate">
-              {recommendationNote}
+        {showBestDay ? (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl bg-green-300/35 px-3 py-2">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              {messages.bestDay}
             </p>
-          ) : null}
-        </div>
+            <p className="text-sm font-medium text-foreground">
+              {formatDay(recommendation.bestDay)}
+            </p>
+          </div>
+        ) : null}
 
-        <div className="flex flex-wrap gap-2">
+        {recommendationNote ? (
+          <div className="rounded-2xl bg-amber-100/70 px-3 py-2 text-xs leading-5 text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            {recommendationNote}
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap gap-1.5 justify-center">
           {compactFactors.map((factor) => {
-            const displayFactor = formatFactorForUnit(factor, temperatureUnit);
+            const displayFactor = formatFactorForLocale(factor, locale);
 
             return (
               <Badge
                 key={factor.key}
                 variant={getImpactVariant(factor.impact)}
-                className="rounded-full px-2.5 py-1 text-[0.72rem]"
+                className="rounded-full px-2 py-1 text-[0.65rem]"
               >
                 {factor.label}: {displayFactor.value}
                 {displayFactor.unit ?? ""}
@@ -226,16 +206,19 @@ export function ActivityCard({
               role="note"
               tabIndex={0}
               aria-label={`${formatDay(summary.date)}. ${summary.score} out of 100. ${summary.label}${
-                summary.date === recommendation.bestDay ? `. ${messages.bestDay}` : ""
+                showBestDay && summary.date === recommendation.bestDay
+                  ? `. ${messages.bestDay}`
+                  : ""
               }`}
               className={cn(
                 "group relative rounded-[0.95rem] border px-1.5 py-1.5 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-cyan-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 getScoreTone(summary.score).cell,
-                summary.date === recommendation.bestDay &&
+                showBestDay &&
+                  summary.date === recommendation.bestDay &&
                   "border-cyan-500/70 bg-cyan-500/15 shadow-[0_0_0_1px_rgba(6,182,212,0.25)]",
               )}
             >
-              {summary.date === recommendation.bestDay ? (
+              {showBestDay && summary.date === recommendation.bestDay ? (
                 <div className="absolute top-1 right-1 size-1.5 rounded-full bg-cyan-500" />
               ) : null}
               <p className="text-[0.62rem] tracking-[0.08em] text-muted-foreground">
@@ -255,13 +238,13 @@ export function ActivityCard({
               <p className="mt-1 hidden text-[0.68rem] capitalize text-muted-foreground 2xl:block">
                 {summary.label}
               </p>
-              <div className="pointer-events-none absolute bottom-[calc(100%+0.45rem)] left-1/2 z-20 hidden w-32 -translate-x-1/2 rounded-xl border border-border/70 bg-popover/95 px-2.5 py-2 text-left shadow-xl backdrop-blur group-hover:block group-focus-visible:block">
+              <div className="pointer-events-none absolute bottom-[calc(100%+0.45rem)] left-1/2 z-[100] hidden w-32 -translate-x-1/2 rounded-xl border border-border/70 bg-popover/95 px-2.5 py-2 text-left shadow-xl backdrop-blur group-hover:block group-focus-visible:block">
                 <p className="text-[0.68rem] font-semibold text-foreground">
                   {formatDay(summary.date)}
                 </p>
                 <div className="mt-1.5 space-y-1">
                   {summary.factors.map((factor) => {
-                    const displayFactor = formatFactorForUnit(factor, temperatureUnit);
+                    const displayFactor = formatFactorForLocale(factor, locale);
 
                     return (
                       <p
@@ -274,7 +257,7 @@ export function ActivityCard({
                     );
                   })}
                 </div>
-                {summary.date === recommendation.bestDay ? (
+                {showBestDay && summary.date === recommendation.bestDay ? (
                   <p className="mt-1 text-[0.68rem] font-medium text-cyan-600 dark:text-cyan-300">
                     {messages.bestDay}
                   </p>

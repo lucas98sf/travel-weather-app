@@ -1,5 +1,5 @@
 import { createYoga } from "graphql-yoga";
-import { schema } from "./graphql/schema.ts";
+import { schema } from "../graphql/schema.ts";
 
 export interface CreateYogaServerOptions {
   graphiql?: boolean;

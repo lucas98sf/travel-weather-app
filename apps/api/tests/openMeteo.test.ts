@@ -1,6 +1,11 @@
 import { expect, test } from "vite-plus/test";
-import { getOpenMeteoLanguage, normalizeLocale } from "../src/locale.js";
-import { decodeLocationId, encodeLocationId, summariseMarineForecast } from "../src/openMeteo.js";
+import { getOpenMeteoLanguage, normalizeLocale } from "../src/lib/locale.js";
+import {
+  decodeLocationId,
+  encodeLocationId,
+  searchDestinations,
+  summariseMarineForecast,
+} from "../src/integrations/open-meteo.js";
 
 test("location ids round-trip the selected place payload", () => {
   const id = encodeLocationId({
@@ -49,4 +54,61 @@ test("normalizes app locales for portuguese and english", () => {
   expect(normalizeLocale("en-US")).toBe("en");
   expect(getOpenMeteoLanguage("pt-BR")).toBe("pt");
   expect(getOpenMeteoLanguage("en-US")).toBe("en");
+});
+
+test("deduplicates repeated destination search results from open-meteo", async () => {
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async () =>
+    ({
+      ok: true,
+      json: async () => ({
+        results: [
+          {
+            name: "Florianopolis",
+            admin1: "Santa Catarina",
+            country: "Brasil",
+            latitude: -27.5954,
+            longitude: -48.548,
+            timezone: "America/Sao_Paulo",
+          },
+          {
+            name: "Florianopolis",
+            admin1: "Santa Catarina",
+            country: "Brasil",
+            latitude: -27.5954,
+            longitude: -48.548,
+            timezone: "America/Sao_Paulo",
+          },
+          {
+            name: "Florianopolis",
+            admin1: "Acre",
+            country: "Brasil",
+            latitude: -8.77,
+            longitude: -70.55,
+            timezone: "America/Rio_Branco",
+          },
+          {
+            name: "Florianopolis",
+            admin1: "Acre",
+            country: "Brasil",
+            latitude: -8.77,
+            longitude: -70.55,
+            timezone: "America/Rio_Branco",
+          },
+        ],
+      }),
+    }) as Response;
+
+  try {
+    const results = await searchDestinations("florianopolis", "pt-BR");
+
+    expect(results).toHaveLength(2);
+    expect(results.map((item) => `${item.name}|${item.region}|${item.country}`)).toEqual([
+      "Florianopolis|Santa Catarina|Brasil",
+      "Florianopolis|Acre|Brasil",
+    ]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

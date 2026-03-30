@@ -61,7 +61,7 @@ export function DestinationCombobox({
   searchError,
   selectedLocationId,
 }: DestinationComboboxProps) {
-  const { formatCoordinate, messages } = useI18n();
+  const { messages } = useI18n();
   const destinations = results.map((location) =>
     readInlineData<destinationCombobox_destination$key>(destinationOptionFragment, location),
   );
@@ -180,10 +180,6 @@ export function DestinationCombobox({
                         )}
                       >
                         <p className="font-medium">{formatLocationLabel(location)}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {location.timezone} • {formatCoordinate(location.latitude)},{" "}
-                          {formatCoordinate(location.longitude)}
-                        </p>
                       </button>
                     </li>
                   );
