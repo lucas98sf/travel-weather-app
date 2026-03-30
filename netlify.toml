@@ -1,0 +1,15 @@
+[build]
+command = "vp run api#generate:schema && vp run website#build"
+publish = "apps/website/dist"
+functions = "netlify/functions"
+
+[[redirects]]
+from = "/api/graphql"
+to = "/.netlify/functions/graphql"
+status = 200
+force = true
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

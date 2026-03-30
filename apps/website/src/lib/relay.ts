@@ -9,20 +9,25 @@ import {
   type Variables,
 } from "relay-runtime";
 
+function getDefaultGraphqlUrl() {
+  if (import.meta.env.VITE_GRAPHQL_URL) {
+    return import.meta.env.VITE_GRAPHQL_URL;
+  }
+
+  return import.meta.env.DEV ? "http://localhost:4000/graphql" : "/api/graphql";
+}
+
 const fetchGraphQL: FetchFunction = async (params: RequestParameters, variables: Variables) => {
-  const response = await fetch(
-    import.meta.env.VITE_GRAPHQL_URL ?? "http://localhost:4000/graphql",
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        query: params.text,
-        variables,
-      }),
+  const response = await fetch(getDefaultGraphqlUrl(), {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
     },
-  );
+    body: JSON.stringify({
+      query: params.text,
+      variables,
+    }),
+  });
 
   if (!response.ok) {
     throw new Error(`GraphQL request failed with ${response.status}`);

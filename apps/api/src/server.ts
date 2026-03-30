@@ -1,16 +1,11 @@
 import { createServer } from "node:http";
-import { createYoga } from "graphql-yoga";
-import { schema } from "./graphql/schema.ts";
+import { createYogaServer } from "./yoga.ts";
 
 const port = Number(process.env.PORT ?? "4000");
 
-const yoga = createYoga({
-  schema,
+const yoga = createYogaServer({
   graphiql: true,
-  cors: {
-    origin: "*",
-    credentials: false,
-  },
+  graphqlEndpoint: "/graphql",
 });
 
 const server = createServer(yoga);
