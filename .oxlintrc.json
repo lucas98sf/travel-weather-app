@@ -1,5 +1,6 @@
 {
   "jsPlugins": ["eslint-plugin-relay", "eslint-plugin-react-compiler"],
+  "ignore": ["__generated__/**"],
   "rules": {
     "react-compiler/react-compiler": "error",
     "relay/graphql-syntax": "error",
