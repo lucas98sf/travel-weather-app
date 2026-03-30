@@ -5,6 +5,11 @@ const yoga = createYogaServer({
   graphqlEndpoint: "/api/graphql",
 });
 
-export default function handler(request: Request) {
-  return yoga.handle(request, {});
+export default async function handler(request: Request) {
+  const response = await Promise.resolve(yoga.fetch(request, {}));
+  return new Response(response.body, {
+    headers: response.headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
 }
