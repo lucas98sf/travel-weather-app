@@ -1,4 +1,4 @@
-import { createYogaServer } from "../../apps/api/src/yoga.ts";
+import { createYogaServer } from "../../apps/api/src/server/create-yoga-server.ts";
 
 const yoga = createYogaServer({
   graphiql: process.env.CONTEXT === "dev",
